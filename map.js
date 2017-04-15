@@ -1,3 +1,15 @@
+var mymap = L.map('map').setView([15.0, 0.0], 3);
+
+L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+  maxZoom: 18,
+  attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+    '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+    'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>' + ' | ' +
+    'This product includes GeoLite2 data created by MaxMind, available from ' +
+    '<a href="http://www.maxmind.com">http://www.maxmind.com</a>.',
+  id: 'mapbox.streets'
+}).addTo(mymap);
+
 var geoip = [];
 var points = [];
 
@@ -14,24 +26,10 @@ jQuery.ajax({
   timeout: 120000,
 });
 
-var mymap = L.map('map');
-
-L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-  maxZoom: 18,
-  attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-    '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-    'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>' + ' | ' +
-    'This product includes GeoLite2 data created by MaxMind, available from ' +
-    '<a href="http://www.maxmind.com">http://www.maxmind.com</a>.',
-  id: 'mapbox.streets'
-}).addTo(mymap);
-
 function addPoints(geoip) {
   source = geoip[0];
   if (source != null) {
     mymap.setView([source.latitude, source.longitude], 4);
-  } else {
-    mymap.setView([15.0, 0.0], 3);
   }
 
   for (i = 0; i < geoip.length; i++) {
