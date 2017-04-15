@@ -2,50 +2,42 @@
 
 import argparse
 import subprocess
+import re
 import geoip2.database
 
-reader = geoip2.database.Reader('/path/to/GeoLite2-City.mmdb')
-address = 'google.com'
-command = 'traceroute ' + address
-output = subprocess.check_output(command, shell=True)
+reader = geoip2.database.Reader('GeoLite2-City.mmdb')
 
-split_list = output.split('\n')
-split_list = split_list[1:]
-
-ip_name_list = []
-ip_addr_list = []
+def main():
+    address = 'google.com'
+    command = 'traceroute ' + address
+    output = subprocess.check_output(command, shell=True)
+    return parse_route(output)
 
 # generate ip name list and ip address list
-for i in range(len(split_list)):
-    line = split_list[i].split()
-    for j in range(len(line)):
-        if j == 1:
-            ip_name_list.append(line[j])
-        elif j == 2:
-            ip_addr_list.append(line[j])
+def parse_route(output):
+    split_list = output.split('\n')
+    split_list = split_list[1:]
 
-# clean up ip address (remove parens)
-for i in range(len(ip_addr_list)):
-    word = ip_addr_list[i]
-    word = word.replace('(', '')
-    word = word.replace(')','')
-    ip_addr_list[i] = word
+    hop = 1
+    hops = []
+    for line in split_list:
+        hop_match = re.match(' (\d\d?)?\s+(.+)\s\((\d+\.\d+\.\d+\.\d+)\).*', line)
+        if hop_match:
+            try:
+                hop = int(hop_match.group(1))
+            except TypeError:
+                pass
+            domain = hop_match.group(2)
+            ip_addr = hop_match.group(3)
+            latitude, longitude = get_ip_location(ip_addr)
+            hop_dict = {'hop': hop, 'domain': domain, 'ip': ip_addr,
+                        'latitude': latitude, 'longitude': longitude}
+            hops.append(hop_dict)
+    return hops
 
 # generate list of ip locations using geoip2
-ip_locs = []
-ip_lat_long = []
-
-for i in range(len(ip_addr_list)):
-    ip = ip_addr_list[i]
-    
+def get_ip_location(ip):
     if ip[:3] != '10.' and ip[:3] != '127':
         response = reader.city(ip)
-        ip_locs.append(response.city.name)
-        ip_lat_long.append((response.location.latitude, response.location.longitude))
-
-
-print(ip_addr_list)
-print
-print(ip_locs)
-print
-print(ip_lat_long)
+        location = response.location
+        return location.latitude, location.longitude
