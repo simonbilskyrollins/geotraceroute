@@ -11,7 +11,7 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=p
 }).addTo(mymap);
 
 var geoip = [];
-var points = [];
+var routes = [];
 
 jQuery.ajax({
   url: "http://localhost:5000/traceroute",
@@ -32,23 +32,26 @@ function addPoints(geoip) {
     mymap.setView([source.latitude, source.longitude], 4);
   }
 
+  var route = new L.layerGroup();
+  var latLngs = [];
   for (i = 0; i < geoip.length; i++) {
     current_geoip = geoip[i];
+    hop = current_geoip.hop;
     domain = current_geoip.domain;
-    lat = current_geoip.latitude;
-    long = current_geoip.longitude;
-    point = L.marker([lat, long]).addTo(mymap)
+    latLng = L.latLng(current_geoip.latitude, current_geoip.longitude);
+    point = L.marker(latLng).addTo(route)
       .bindPopup(domain);
-    points.push(point);
+    latLngs.push(latLng);
   }
+  L.polyline(latLngs).addTo(route);
+  route.addTo(mymap);
+  routes.push(route);
 }
 
 var popup = L.popup();
 
 function onMapClick(e) {
   popup
-    .setLatLng(e.latlng)
-    .setContent("You clicked the map at " + e.latlng.toString())
     .openOn(mymap);
 }
 
