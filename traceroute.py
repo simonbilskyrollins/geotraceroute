@@ -16,7 +16,10 @@ def main(address):
 # generate ip name list and ip address list
 def parse_route(reader, output):
     split_list = output.split('\n')
-    split_list = split_list[1:]
+    for i in range(len(split_list)):
+        if split_list[i][:10] != 'traceroute':
+            break
+        split_list.pop(i)
 
     hop = 1
     hops = []
